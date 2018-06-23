@@ -10,6 +10,8 @@ import sqlite3
 import sys
 import uuid
 
+from httperror import HTTPError
+
 RETURN_HEADERS = []
 
 def __do_get():
@@ -23,16 +25,14 @@ def __do_post():
     try:
         postdata = json.loads(postdata)
     except json.JSONDecodeError:
-        RETURN_HEADERS.append('Status: 400')
-        return "Malformed Request. Data not JSON-decodable"
+        raise HTTPError("Input data not JSON-decoable")
 
     if 'action' in postdata and postdata['action'] == 'login':
         return __performlogin(postdata)
     if 'action' in postdata and postdata['action'] == 'authtoken':
         return __verify_token(postdata)
 
-    RETURN_HEADERS.append('Status: 400')
-    return "Not implemented"
+    raise HTTPError("Unhandled Request")
 
 def __performlogin(postdata):
     if not 'username' in postdata or \
@@ -40,31 +40,38 @@ def __performlogin(postdata):
         RETURN_HEADERS.append('Status: 400')
         return "Missing username or password"
 
+    authtoken = login(postdata['username'], postdata['password'])
+    return json.dumps(authtoken)
+
+def login(groupname, password):
+    """Tries to log in, returns a token if successful"""
+    if not groupname or not password:
+        raise HTTPError("Missing username or password")
+
     database = sqlite3.connect('database.sqlite3')
     result = database.execute(
         'SELECT salt, password FROM groups WHERE name = ?',
-        (postdata['username'],)).fetchone()
+        (groupname, )).fetchone()
+
     if result is None:
-        RETURN_HEADERS.append('Status: 412')
-        return "No group found"
-    password_hash = hash_password(postdata['password'], result[0])
+        raise HTTPError("Group not found", 403)
+
+    password_hash = hash_password(password, result[0])
     if password_hash == result[1]:
-        while True: #Create uniqe authtoken
+        while True: # Create unique authtoken
             token = generate_random()
-            authtokencount = database.execute((
-                'SELECT count() FROM authtoken WHERE authtoken=?'),
-                                              (token,)).fetchone()
+            authtokencount = database.execute(
+                'SELECT count() FROM authtoken WHERE authtoken=?',
+                (token,)).fetchone()
             if authtokencount[0] == 0:
                 break
-        database.execute((
-            'INSERT INTO authtoken(groupname, authtoken) values(?, ?)'),
-                         (postdata['username'], token))
+        database.execute(
+            'INSERT INTO authtoken(groupname, authtoken) values(?, ?)',
+            (groupname, token))
         database.commit()
-        RETURN_HEADERS.append('Status: 200')
-        return json.dumps(token)
 
-    RETURN_HEADERS.append('Status: 400')
-    return "Wrong groupname/password combination"
+        return token
+    raise HTTPError("Incorrect groupname/password", 403)
 
 def generate_random():
     """Generates a random identifier. Is probably unique"""
@@ -80,8 +87,7 @@ def hash_password(password, salt):
 def __verify_token(request):
     group = verify_token(request['token'])
     if group is None:
-        RETURN_HEADERS.append('Status: 400')
-        return "Invalid Authtoken"
+        raise HTTPError("Invalid Authtoken", 401)
     RETURN_HEADERS.append('Stauts: 200')
     return group
 
@@ -101,8 +107,7 @@ def verify_token(token):
 
 def __main():
     if not 'REQUEST_METHOD' in os.environ:
-        RETURN_HEADERS.append('Status: 400')
-        return "MISSING REQUEST_METHOD"
+        raise HTTPError("Missing REQUEST_METHOD")
 
     if os.environ['REQUEST_METHOD'] == 'GET':
         return __do_get()
@@ -110,12 +115,23 @@ def __main():
     if os.environ['REQUEST_METHOD'] == 'POST':
         return __do_post()
 
-    RETURN_HEADERS.append('Status: 400')
-    return "Not implemented"
+    raise HTTPError("Unhandled REQUEST_METHOD")
 
 if __name__ == '__main__':
-    RESPONSE = __main()
-    for header in RETURN_HEADERS:
-        print(header)
+    try:
+        RESPONSE = __main()
+    except HTTPError as err:
+        if err.status:
+            RETURN_HEADERS.append('Status: %d' % err.status)
+        else:
+            RETURN_HEADERS.append('Status: 400')
+        RESPONSE = err.message
+
+    NUM_HEADERS = len(RETURN_HEADERS)
+    if NUM_HEADERS == 0:
+        print("Status: 200")
+    else:
+        for header in RETURN_HEADERS:
+            print(header)
     print()
     print(RESPONSE)

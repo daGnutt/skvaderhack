@@ -1,40 +1,49 @@
 console.log("Loaded app.js");
 
-document.getElementById("btnGroupCreate").addEventListener( "click", btnGroupCreate_Click );
 document.getElementById("btnGroupLogin").addEventListener( "click", btnGroupLogin_Click );
 document.getElementById("btnLogout").addEventListener( "click", btnLogout_Click );
 document.getElementById("btnKeySubmit").addEventListener( "click", btnKeySubmit_Click );
 document.getElementById("txtKeySubmit").addEventListener( "keyup", txtKeySubmit_Keyup );
 
 document.querySelectorAll("#login input").forEach((a) => {a.addEventListener( "keyup", txtLogin_KeyUp );});
-
+document.querySelectorAll("#creategroup input").forEach((a) => {a.addEventListener( "keyup", validate_new_group );});
 
 if( location.protocol === 'http:' )
 {
 	window.location.replace("https://skvaderhack.xyz");
 }
 
-tmrFindGroups = null
+var groups = []
+function fetchGroups()
+{
+	var fetcher = new XMLHttpRequest;
+	fetcher.addEventListener( "load", parseGroups );
+	fetcher.open( "GET", "api/groups.py" );
+	fetcher.send();
+}
+
+function parseGroups()
+{
+	if( this.status != 200 )
+	{
+		throw this;
+	}
+
+	groups = JSON.parse( this.responseText );
+	updateGroupList();
+}
+
 function txtLogin_KeyUp()
 {
 	if(this.id == "txtGroupName")
 	{
-		if( tmrFindGroups )
-		{
-			clearTimeout(tmrFindGroups);
-		}
-		tmrFindGroups = setTimeout( initFetchGroupList, 300 );
+		updateGroupList();
 	}
 
 	checkLoginButton();
 
 	if( event.keyCode == 13 )
 	{
-		if( document.getElementById("btnGroupCreate").disabled == false )
-		{
-			btnGroupCreate_Click();
-		}
-
 		if( document.getElementById("btnGroupLogin").disabled == false )
 		{
 			btnGroupLogin_Click();
@@ -42,14 +51,125 @@ function txtLogin_KeyUp()
 	}
 }
 
-function initFetchGroupList()
+function show_passwordRecovery()
 {
-	clearTimeout( tmrFindGroups );
-	tmrFindGroups = null;
-
-	searchValue = document.getElementById( "txtGroupName" ).value;
-	fetchGroupList( searchValue );
+	document.getElementById( "login" ).style.display = "none";
+	document.getElementById( "passwordrecovery" ).style.display = "block";
+	if( !localStorage.getItem( "recovery" ) )
+	{
+		document.getElementById( "pwdrecreq" ).style.display = "block";
+		document.getElementById( "pwdrecred" ).style.display = "none";
+	} else {
+		document.getElementById( "txtRedPwdRecEmail" ).value = localStorage.getItem( "recovery" );
+		document.getElementById( "pwdrecreq" ).style.display = "none";
+		document.getElementById( "pwdrecred" ).style.display = "block";
+	}
 }
+
+function req_setPassword()
+{
+	var email = document.getElementById( "txtRedPwdRecEmail" ).value;
+	var token = document.getElementById( "txtRedPwdRecToken" ).value;
+	var passw = document.getElementById( "txtRedPwdRecPwd" ).value;
+
+	var payload = { "action": "reset_password", "email": email, "token": token, "password": passw }
+
+	var sender = new XMLHttpRequest();
+	sender.addEventListener( "load", parse_setPassword );
+	sender.open( "POST", "api/password_recovery.py" );
+	sender.send( JSON.stringify( payload ) );
+}
+
+function parse_setPassword()
+{
+	if( this.status == 200 )
+	{
+		localStorage.removeItem( "recovery" );
+		localStorage.setItem("authtoken", this.responseText);
+		location.reload();
+	} else {
+		showMessage( this.responseText );
+	}
+}
+
+function req_passwordRecovery()
+{
+	var email = document.getElementById( "txtReqPwdRec" ).value;
+	var payload = {"action": "request_token", "email": email};
+	var sender = new XMLHttpRequest();
+	sender.addEventListener( "load", parse_passwordRecovery );
+	sender.open( "POST", "api/password_recovery.py" );
+	sender.send(JSON.stringify( payload ));
+}
+
+function parse_passwordRecovery()
+{
+	if( this.status == 200 )
+	{
+		localStorage.setItem( "recovery", document.getElementById( "txtReqPwdRec" ).value );
+		show_passwordRecovery();
+	} else {
+		showMessage( this.repsonseText );
+	}
+}
+
+function show_createGroup()
+{
+	document.getElementById( "login" ).style.display = "none";
+	document.getElementById( "creategroup" ).style.display = "block";
+}
+
+function validate_new_group()
+{
+	var namedom	= document.getElementById("txtCreateGroupName");
+	var passdom	= document.getElementById("txtCreateGroupPassword");
+	var emaildom	= document.getElementById("txtCreateGroupEmail");
+
+	var namelength = namedom.value.length;
+	var passlength = passdom.value.length;
+	var emaillength = emaildom.value.length;
+
+	//@TODO: CHECK IF GROUP ALREADY EXISTS
+
+	if( namelength && passlength && emaillength )
+	{
+		document.getElementById( "btnCreateGroupSave" ).disabled = false;
+		if( event.keyCode == 13 )
+		{
+			register_group();
+		}
+	} else {
+		document.getElementById( "btnCreateGroupSave" ).disabled = true;
+	}
+}
+
+function register_group()
+{
+	var payload = {
+		action: "create",
+		groupname: document.getElementById("txtCreateGroupName").value,
+		password: document.getElementById("txtCreateGroupPassword").value,
+		contact: document.getElementById("txtCreateGroupEmail").value
+	};
+
+	var sender = new XMLHttpRequest();
+	sender.addEventListener( "load", callback_new_group );
+	sender.open( "POST", "api/groups.py" );
+	sender.send(JSON.stringify(payload));
+}
+
+function callback_new_group()
+{
+	if( this.status != 200 )
+	{
+		showMessage( this.responseText );
+	} else {
+		localStorage.setItem( "authtoken", JSON.parse(this.responseText) );
+		location.reload();
+	}
+}
+
+
 
 function checkLoginButton()
 {
@@ -78,36 +198,26 @@ function checkLoginButton()
 			break;
 		}
 	}
-	if( foundGroup == false && enteredPassw.length > 0)
-	{
-		document.getElementById( "contacthider" ).style.display = "block";
-		document.getElementById("btnGroupCreate").disabled = false;
-	} else {
-		document.getElementById( "contacthider" ).style.display = "none";
-		document.getElementById("btnGroupCreate").disabled = true;
-	}
-}
-
-lastSearch = null;
-function fetchGroupList( searchterm )
-{
-	if( lastSearch != searchterm )
-	{
-		lastSearch = searchterm;
-		var request = new XMLHttpRequest();
-		    request.addEventListener( "load", updateGroupList );
-		    request.open("GET", "api/groups.py?search=" + searchterm);
-		    request.send();
-	}
 }
 
 function updateGroupList()
 {
+	var searchterm = document.getElementById( "txtGroupName" ).value;
+
+	var searchgroups = groups.filter((group) => {
+		var sanitized = group.toLowerCase().trim();
+		if( sanitized.includes( searchterm.toLowerCase().trim() ) )
+		{
+			return true;
+		} else {
+			return false;
+		}
+	});
+
 	killAllChildren( document.getElementById("lstGroups") );
-	groups = JSON.parse( this.responseText );
-	for( groupnum in groups )
+	for( groupnum in searchgroups )
 	{
-		group = groups[ groupnum ];
+		group = searchgroups[ groupnum ];
 		newNode = document.createElement("option");
 		newNode.value = group;
 		document.getElementById("lstGroups").appendChild(newNode);
@@ -121,11 +231,6 @@ function killAllChildren( domElement )
 	{
 		domElement.removeChild(domElement.firstChild);
 	}
-}
-
-function btnGroupCreate_Click()
-{
-	showMessage( "You tried to create a group...");
 }
 
 function btnGroupLogin_Click()
@@ -170,10 +275,17 @@ messageTimeout = null;
 function showMessage( message, messagetype, timeout )
 {
 	messagedom = document.getElementById("message");
-	if( messagetype == "warning" )
+	if( messagetype == "danger" )
 	{
 		messagedom.style.background = "rgb(255,0,0)";
 		messagedom.style.color = "rgb(255,255,255)";
+	} else if( messagetype == "warning" )
+	{
+		messagedom.style.background = "rgb(255,255,0)";
+		messagedom.style.color = "rgb(0,0,0)";
+	} else if( messagetype == "safe" ) {
+		messagedom.style.background = "rgb(0,255,0)";
+		messagedom.style.color = "rgb(0,0,0)";
 	} else {
 		messagedom.style.background = "rgb(128,0,128)";
 		messagedom.style.color = "rgb(0,0,0)";
@@ -225,8 +337,6 @@ function checkLoginState()
 		document.getElementById("login").style.display = 'block';
 		document.getElementById("keysubmit").style.display = 'none';
 
-		fetchGroupList( "" );
-
 		var fetchScoreboard = new XMLHttpRequest();
 		fetchScoreboard.addEventListener( "load", parseScoreboard );
 		fetchScoreboard.open( "GET", "api/score.py" );
@@ -262,6 +372,9 @@ function parseAuthToken()
 		fetchGroupStatus();
 	} else { //Authtoken is not valid, force login.
 		console.log( "Forcing Login" );
+
+		localStorage.removeItem( "authtoken" );
+
 		document.getElementById("login").style.display = 'block';
 		document.getElementById("keysubmit").style.display = 'none';
 		document.querySelectorAll("#login input").forEach((a) => {a.disabled = false;});
@@ -312,6 +425,8 @@ function parseKeySubmit()
 	if( this.status == 200 ) //A correct key was supplied
 	{
 		showMessage( "A correct key was supplied" );
+		document.getElementById( "txtKeySubmit" ).value = "";
+		fetchGroupStatus();
 	} else {
 		try
 		{
@@ -354,9 +469,15 @@ function groupstatus(new_status)
 	}
 
 	tmrGropuStatus = setTimeout( fetchGroupStatus, 60000 );
+	showScoreboard(new_status.points)
 
 	var groupscore = new_status.points.filter(function(a) { return a.name == new_status.group; } );
-	groupscore = groupscore[0].score;
+	if(groupscore.length == 0)
+	{
+		groupscore = 0;
+	} else {
+		groupscore = groupscore[0].score;
+	}
 
 	showScoreboard(new_status.points);
 	document.getElementById("lblGroupScore").innerHTML = groupscore;
@@ -428,4 +549,12 @@ function showScoreboard(scores)
 	}
 }
 
+document.querySelectorAll("form").forEach((element) => {
+	element.addEventListener("submit", (e) => {
+		e.preventDefault();
+		return false;
+	});
+});
+
 checkLoginState();
+fetchGroups();

@@ -7,26 +7,25 @@ import json
 import os
 import sys
 
+from httperror import HTTPError
+
 RETURN_HEADERS = []
 
 def __do_get():
-    RETURN_HEADERS.append('Status: 403')
-    return "This script is NOT get-able"
+    raise HTTPError("This script is not GET-able", 403)
 
 def __do_post():
     postdata = sys.stdin.read()
     try:
         postdata = json.loads(postdata)
     except json.JSONDecodeError:
-        RETURN_HEADERS.append('Status: 400')
-        return "Malformed Request. Data not JSON-decodable"
-    RETURN_HEADERS.append('Status: 500')
-    return "Not implemented"
+        raise HTTPError("Malformed Request. Data is not JSON-decodable")
+
+    raise HTTPError("Undhandled POST request", 500)
 
 def __main():
     if not 'REQUEST_METHOD' in os.environ:
-        RETURN_HEADERS.append('Status: 400')
-        return "MISSING REQUEST_METHOD"
+        raise HTTPError("Missing REQUEST_METHOD")
 
     if os.environ['REQUEST_METHOD'] == 'GET':
         return __do_get()
@@ -34,12 +33,24 @@ def __main():
     if os.environ['REQUEST_METHOD'] == 'POST':
         return __do_post()
 
-    RETURN_HEADERS.append('Status: 400')
-    return "Not implemented"
+    raise HTTPError("Undhandled REQUEST_METHOD")
 
 if __name__ == '__main__':
-    RESPONSE = __main()
-    for header in RETURN_HEADERS:
-        print(header)
+    try:
+        RESPONSE = __main()
+    except HTTPError as err:
+        if err.status:
+            RETURN_HEADERS.append('Status: %d' % err.status)
+        else:
+            RETURN_HEADERS.append('Status: 400')
+        RESPONSE = err.message
+
+    NUM_HEADERS = len(RETURN_HEADERS)
+    if NUM_HEADERS == 0:
+        print('Status: 200')
+    else:
+        for header in RETURN_HEADERS:
+            print(header)
+    print('Content-Length: %d' % len(RESPONSE))
     print()
     print(RESPONSE)

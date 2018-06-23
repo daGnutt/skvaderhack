@@ -41,10 +41,6 @@ div.container {
 	margin-right: auto;
 }
 
-div#login {
-	text-align: center;
-}
-
 div#scoreboard {
 	width: auto;
 	display: flex;
@@ -108,11 +104,22 @@ input:focus {
 }
 
 #login {
-	display: none
+	display: none;
+	text-align: center;
 }
 
 #keysubmit {
-	display: none
+	display: none;
+}
+
+#creategroup {
+	display: none;
+	text-align: center;
+}
+
+#passwordrecovery {
+	text-align: center;
+	display: none;
 }
 
 .clickable {
@@ -128,19 +135,81 @@ input:focus {
 		<div id="message">
 		</div>
 		<div class="container">
+		<div id="creategroup">
+			<h2>Create New Group</h2>
+			<form id="frmCreateGroup">
+				<p>
+				<input type="text" id="txtCreateGroupName" placeholder="Group Name" size=20 autocomplete="username">
+				<input type="password" id="txtCreateGroupPassword" placeholder="Group Password" autocomplete="new-password" size=20>
+				</p>
+				<p>
+				<input type="email" id="txtCreateGroupEmail" placeholder="Password Recovery Email" size=30 autocomplete="email">
+				</p>
+				<p>
+				<button type="button" id="btnCreateGroupCancel" onClick="location.reload();">Cancel</button>
+				<button type="button" id="btnCreateGroupSave" onClick="register_group();" disabled>Create</button>
+				</p>
+				<p>
+				Password recovery email will only be used if you need to reset
+				the password for the group. It will be purged within 1 week after the larp is over.
+				</p>
+			</form>
+		</div>
+		<div id="passwordrecovery">
+			<h2>Password Recovery</h2>
+			<div id="pwdrecreq">
+			<h3>Request Recovery Token</h3>
+			<form id="frmPwdRecReq">
+				<p>
+				<input type="email" id="txtReqPwdRec" placeholder="Contact Email" size=30 autocomplete="email">
+				</p>
+				<p>
+				<button type="button" onClick="location.reload();">Cancel</button>
+				<button type="button" onClick="req_passwordRecovery();" id="btnReqPwdReq">Request Recovery</button>
+				</p>
+				<p>
+				When you click Request Recovery Token an email will be sent to the contact email.
+				This email will contain a link, and a token. Either fill out the form that appears here
+				or click the link to be able to set a new password.
+				</p>
+			</form>
+			</div>
+			<div id="pwdrecred">
+				<h3>Redeem Recovery Token</h3>
+				<form id="frmPwdRecRed">
+				<p>
+				<input type="email" id="txtRedPwdRecEmail" placeholder="Contact Email" size=30 autocomplete="email">
+				</p>
+				<p>
+				<input type="text" id="txtRedPwdRecToken" placeholder="Token" autocomplete="off">
+				</p>
+				<p>
+				<input type="password" id="txtRedPwdRecPwd" placeholder="New Password" autocomplete="new-password">
+				</p>
+				<p>
+				<button onClick="localStorage.removeItem('recovery'); location.reload();" type="button">Abort Password Recovery</button>
+				<button type="button" onClick="req_setPassword();" id="btnSetNewPassword">Save Password</button>
+				</p>
+				<p>
+				An email shall have been sent to you. If you click the link, you will get
+				back to this page with the fields all filled out, otherwise you must
+				copy the token from your email and insert it in this form.
+				</p>
+				</form>
+			</div>
+		</div>
 		<div id="login">
-			<form id="frmLogin" onSubmit="return false;">
+			<form id="frmLogin">
 				<p>
 				<input type="text" id="txtGroupName" list="lstGroups" autocomplete="username" placeholder="Group" size=20>
 				<input type="password" id="txtGroupPwd" autocomplete="current-password" placeholder="Password" size=20>
 				</p>
 				<p>
-				<button id="btnGroupCreate" disabled>Create Group</button>
-				<button id="btnReoverPassword" disabled>Recover Password</button>
-				<button id="btnGroupLogin" disabled>Log in</button>
+				<button type="button" id="btnGroupCreate" onClick="show_createGroup();">Create Group</button>
+				<button type="button" id="btnReoverPassword" onClick="show_passwordRecovery();">Recover Password</button>
+				<button type="button" id="btnGroupLogin" disabled>Log in</button>
 				</p>
-				<datalist id="lstGroups">
-				</datalist>
+				<datalist id="lstGroups" />
 			</form>
 		</div>
 		<div id="keysubmit">
