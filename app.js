@@ -5,18 +5,53 @@ document.getElementById("btnLogout").addEventListener( "click", btnLogout_Click 
 document.getElementById("btnKeySubmit").addEventListener( "click", btnKeySubmit_Click );
 document.getElementById("txtKeySubmit").addEventListener( "keyup", txtKeySubmit_Keyup );
 
-document.querySelectorAll("#login input").forEach((a) => {a.addEventListener( "keyup", txtLogin_KeyUp );});
-document.querySelectorAll("#creategroup input").forEach((a) => {a.addEventListener( "keyup", validate_new_group );});
+document.querySelectorAll("#login input").forEach(function(a) {a.addEventListener( "keyup", txtLogin_KeyUp );});
+document.querySelectorAll("#creategroup input").forEach(function(a) {a.addEventListener( "keyup", validate_new_group );});
 
-if( location.protocol === 'http:' )
+// var urlParams;
+// (window.onpopstate = function () {
+// 	var match,
+// 		pl     = /\+/g,  // Regex for replacing addition symbol with a space
+// 		search = /([^&=]+)=?([^&]*)/g,
+// 		decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+// 		query  = window.location.search.substring(1);
+// 	urlParams = {};
+// 	while (match = search.exec(query))
+// 		urlParams[decode(match[1])] = decode(match[2]);
+
+// 	parseParams();
+// })();
+
+function parseParams()
 {
-	window.location.replace("https://skvaderhack.xyz");
+	console.log(urlParams);
+	if( "password_recovery" in urlParams )
+	{
+		localStorage.setItem( "recovery", urlParams.email );
+		show_passwordRecovery();
+		document.getElementById( "txtRedPwdRecToken" ).value = urlParams.token;
+		document.getElementById( "txtRedPwdRecPwd" ).focus();
+	}
 }
 
-var groups = []
+function validateGroupName()
+{
+	var suggested_name = document.getElementById( "txtCreateGroupName" ).value;
+	var matcher = RegExp(/^\w+$/);
+	var is_valid = matcher.test( suggested_name );
+	if(!is_valid)
+	{ //@TODO: SHOW A HINT
+		document.getElementById( "txtCreateGroupName" ).classList.add( "error" );	
+	} else {
+		document.getElementById( "txtCreateGroupName" ).classList.remove( "error" );
+	}
+	return is_valid;
+}
+
+var groups = [];
 function fetchGroups()
 {
-	var fetcher = new XMLHttpRequest;
+	var fetcher = new XMLHttpRequest();
 	fetcher.addEventListener( "load", parseGroups );
 	fetcher.open( "GET", "api/groups.py" );
 	fetcher.send();
@@ -70,9 +105,9 @@ function req_setPassword()
 {
 	var email = document.getElementById( "txtRedPwdRecEmail" ).value;
 	var token = document.getElementById( "txtRedPwdRecToken" ).value;
-	var passw = document.getElementById( "txtRedPwdRecPwd" ).value;
+	var passw = hash_password(document.getElementById( "txtRedPwdRecPwd" ).value);
 
-	var payload = { "action": "reset_password", "email": email, "token": token, "password": passw }
+	var payload = { "action": "reset_password", "email": email, "token": token, "password": passw };
 
 	var sender = new XMLHttpRequest();
 	sender.addEventListener( "load", parse_setPassword );
@@ -119,6 +154,11 @@ function show_createGroup()
 	document.getElementById( "creategroup" ).style.display = "block";
 }
 
+function hash_password(password)
+{
+	return btoa(password);
+}
+
 function validate_new_group()
 {
 	var namedom	= document.getElementById("txtCreateGroupName");
@@ -131,7 +171,7 @@ function validate_new_group()
 
 	//@TODO: CHECK IF GROUP ALREADY EXISTS
 
-	if( namelength && passlength && emaillength )
+	if( validateGroupName() && namelength && passlength && emaillength )
 	{
 		document.getElementById( "btnCreateGroupSave" ).disabled = false;
 		if( event.keyCode == 13 )
@@ -148,7 +188,7 @@ function register_group()
 	var payload = {
 		action: "create",
 		groupname: document.getElementById("txtCreateGroupName").value,
-		password: document.getElementById("txtCreateGroupPassword").value,
+		password: hash_password(document.getElementById("txtCreateGroupPassword").value),
 		contact: document.getElementById("txtCreateGroupEmail").value
 	};
 
@@ -188,8 +228,8 @@ function checkLoginButton()
 	}
 	
 	var foundGroup = false;
-	allGroups = document.getElementById("lstGroups").children
-	for( element in allGroups )
+	allGroups = document.getElementById("lstGroups").children;
+	for( var element in allGroups )
 	{
 		dom = allGroups[ element ];
 		if( dom.value == enteredGroup )
@@ -204,7 +244,7 @@ function updateGroupList()
 {
 	var searchterm = document.getElementById( "txtGroupName" ).value;
 
-	var searchgroups = groups.filter((group) => {
+	var searchgroups = groups.filter(function(group) {
 		var sanitized = group.toLowerCase().trim();
 		if( sanitized.includes( searchterm.toLowerCase().trim() ) )
 		{
@@ -215,7 +255,7 @@ function updateGroupList()
 	});
 
 	killAllChildren( document.getElementById("lstGroups") );
-	for( groupnum in searchgroups )
+	for( var groupnum in searchgroups )
 	{
 		group = searchgroups[ groupnum ];
 		newNode = document.createElement("option");
@@ -236,18 +276,18 @@ function killAllChildren( domElement )
 function btnGroupLogin_Click()
 {
 	username = document.getElementById("txtGroupName").value;
-	password = document.getElementById("txtGroupPwd").value;
+	password = hash_password(document.getElementById("txtGroupPwd").value);
 
 	payload = {
 		"action": "login",
 		"username": username,
 		"password": password
-	}
+	};
 
 	var request = new XMLHttpRequest();
 	    request.addEventListener( "load", parseLogin );
 	    request.open("POST", "api/auth.py");
-	    request.send(JSON.stringify(payload))
+	    request.send(JSON.stringify(payload));
 }
 
 function btnLogout_Click() {
@@ -321,7 +361,7 @@ function checkLoginState()
 	var authtoken = localStorage.getItem( "authtoken" );
 	if( authtoken != null ) //Authtoken exists
 	{
-		document.querySelectorAll("#login input").forEach((a) => {a.disabled = true;});
+		document.querySelectorAll("#login input").forEach(function(a) {a.disabled = true;});
 		var payload = {"action": "authtoken", "token": authtoken };
 		var validator = new XMLHttpRequest();
 		    validator.addEventListener( "load", parseAuthToken );
@@ -330,7 +370,7 @@ function checkLoginState()
 
 		document.getElementById( "btnKeySubmit" ).disabled = true;
 	} else { //No Authtoken exists
-		document.querySelectorAll("#login input").forEach((a) => {a.disabled = false;});
+		document.querySelectorAll("#login input").forEach(function(a) {a.disabled = false;});
 		document.getElementById("txtGroupName").disabled = false;
 		document.getElementById("txtGroupName").focus();
 		document.getElementById("txtGroupPwd").disabled = false;
@@ -377,7 +417,7 @@ function parseAuthToken()
 
 		document.getElementById("login").style.display = 'block';
 		document.getElementById("keysubmit").style.display = 'none';
-		document.querySelectorAll("#login input").forEach((a) => {a.disabled = false;});
+		document.querySelectorAll("#login input").forEach(function(a) {a.disabled = false;});
 		document.getElementById("txtGroupName").focus();
 		
 	}
@@ -406,7 +446,7 @@ function btnKeySubmit_Click()
 {	var key = document.getElementById("txtKeySubmit").value.trim();
 	var payload = {"action": "submitkey",
 		"authtoken": localStorage.getItem("authtoken"),
-		"key": key}
+		"key": key};
 
 	var sender = new XMLHttpRequest();
 	    sender.addEventListener( "load", parseKeySubmit );
@@ -445,7 +485,7 @@ function parseKeySubmit()
 
 function fetchGroupStatus()
 {
-	var payload = {"action": "groupstatus", "authtoken": localStorage.getItem("authtoken") }
+	var payload = {"action": "groupstatus", "authtoken": localStorage.getItem("authtoken") };
 
 	var fetcher = new XMLHttpRequest();
 	    fetcher.addEventListener( "load", parseGroupStatus );
@@ -469,7 +509,7 @@ function groupstatus(new_status)
 	}
 
 	tmrGropuStatus = setTimeout( fetchGroupStatus, 60000 );
-	showScoreboard(new_status.points)
+	showScoreboard(new_status.points);
 
 	var groupscore = new_status.points.filter(function(a) { return a.name == new_status.group; } );
 	if(groupscore.length == 0)
@@ -528,18 +568,18 @@ function showScoreboard(scores)
 
 	killAllChildren(document.getElementById("scoreboard"));
 
-	for( pos in scores )
+	for( var pos in scores )
 	{
 		group = scores[ pos ];
 		container = document.createElement("div");
 		container.classList.add("score-item");
 
 		groupname = document.createElement("div");
-		groupname.innerHTML = group["name"];
+		groupname.innerHTML = group.name;
 		groupname.classList.add("name");
 
 		points = document.createElement("div");
-		points.innerHTML = group["score"];
+		points.innerHTML = group.score;
 		points.classList.add("score");
 
 		container.appendChild(groupname);
@@ -549,8 +589,8 @@ function showScoreboard(scores)
 	}
 }
 
-document.querySelectorAll("form").forEach((element) => {
-	element.addEventListener("submit", (e) => {
+document.querySelectorAll("form").forEach(function(element) {
+	element.addEventListener("submit", function(e) {
 		e.preventDefault();
 		return false;
 	});
