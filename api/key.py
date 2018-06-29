@@ -71,7 +71,7 @@ def submitkey(authtoken, key):
         RETURN_HEADERS.append('Status: 400')
         return "That key was wrong the last time you submitted it"
 
-    keyexist = database.execute('SELECT count() FROM keys WHERE key=:key',
+    keyexist = database.execute('SELECT count() FROM keys WHERE LOWER(key)=:key',
                                 {'key': key}).fetchone()[0]
     if keyexist == 0:
         database.execute('INSERT INTO badkeys(groupname, key) values(:groupname, :key)',

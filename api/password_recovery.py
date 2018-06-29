@@ -66,11 +66,12 @@ def get_token(email):
     return token
 
 def send_token(email, token):
+    """Creates a email to the recipient with the token"""
     with open("templates/email_password_recovery.txt", mode="r") as file_pointer:
         string = file_pointer.read()
 
     string = string % (token, email, token)
-    sendemail.send_email(email, "Password Recovery", string, "baron@skvaderhack.xyz");
+    sendemail.send_email(email, "Password Recovery", string, "baron@skvaderhack.xyz")
 
 def __reset_password(request):
     try:
@@ -92,9 +93,9 @@ def reset_password(email, token, password):
     database.execute(("DELETE FROM password_recovery"
                       " WHERE datetime(generated, '+15 minute') < CURRENT_TIMESTAMP"))
     database.commit()
-    
+
     count = database.execute(("SELECT count() FROM password_recovery"
-                              " WHERE email=:email AND token=:token"), 
+                              " WHERE email=:email AND token=:token"),
                              {"email": email, "token": token}).fetchone()[0]
     if not count == 1:
         raise ValueError("Incorrect email/token combination")
@@ -104,8 +105,9 @@ def reset_password(email, token, password):
         raise ValueError("Could not find salt for email")
     salt = salt[0]
 
-    password_hash = auth.hash_password(password,salt)
-    database.execute("UPDATE groups SET password=?", (password_hash,))
+    password_hash = auth.hash_password(password, salt)
+    database.execute("UPDATE groups SET password=:password WHERE contact_email=:email",
+                     {"password": password_hash, "email": email})
     database.execute("DELETE from password_recovery WHERE token=:token", {"token": token})
     database.commit()
 

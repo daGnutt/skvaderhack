@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 """groups.py: A CGI-script used to fetch groups based on a search term"""
 
 import json
 import os
+import io
 import re
 import sqlite3
 import sys
@@ -14,6 +15,11 @@ import auth
 from httperror import HTTPError
 
 RETURN_HEADERS = []
+
+def set_output_encoding(codec, errors='strict'):
+    sys.stdout = io.TextIOWrapper(
+        sys.stdout.detach(), errors=errors,
+        line_buffering=sys.stdout.line_buffering)
 
 def __do_get():
     querystring = urllib.parse.parse_qs(os.environ['QUERY_STRING'], keep_blank_values=True)
@@ -54,7 +60,7 @@ def __create_group(groupname, password, contact):
         create_group(groupname, password, contact)
         return auth.login(groupname, password)
     except ValueError as error:
-        raise HTTPError(error.args[0])
+        raise HTTPError(json.dumps(error.args))
 
 def find_group_by_email(email):
     if not isinstance(email, str):
@@ -88,6 +94,7 @@ def create_group(name, password, contact):
 
     salt = auth.generate_random()
     hashed_password = auth.hash_password(password, salt)
+
 
     try:
         database.execute((
@@ -136,6 +143,7 @@ def __main():
     raise HTTPError("Unhandled REQUEST_METHOD")
 
 if __name__ == '__main__':
+    set_output_encoding('utf-8')
     try:
         RESPONSE = __main()
     except HTTPError as err:
