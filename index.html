@@ -3,7 +3,7 @@
 	<head>
 		<title>Skvaderhack</title>
 		<link href="https://fonts.googleapis.com/css?family=Audiowide|Share+Tech+Mono" rel="stylesheet">
-		<link href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAXl5eAIKCggADA/8ACgoKAHNzcwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgICAgICAgICAgICAAAAAgIEBAQEBAQEBAQEAgIAAAIEBAQEBAQEBAQEBAQCAAACBAQDBAMDBAQEBAQEAgAAAgQEBAMEBAQEBAQEBAIAAAIEBAQEBAQEBAQEBAQCAAACBAQDBAMDBAQDAwQEAgAAAgQBBAMEBAQEBAQEBAIAAAIEBQQEBAQEBAQEBAQCAAACBAUFBAMDBAQDAwQEAgAAAgQFAQUEBAQEBAQEBAIAAAIEBAUFBQUBBAQEBAQCAAACAgQEBAQEBAQEBAQCAgAAAAICAgICAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAP//AADAAwAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAwAMAAP//AAA=" rel="icon" type="image/x-icon" />
+		<link href="/favicon.ico" rel="icon" type="image/x-icon" />
 		<meta name="viewport" content="width=400, initial-scale=1.0">
 		<meta name="theme-color" content="#5a005a">
 <style>
@@ -103,6 +103,12 @@ input:focus {
 	box-shadow: 0 0 10px rgb(255,0,255);
 }
 
+input.error {
+	outline: none;
+	box-shadow: 0 0 10px rgb(255, 0, 0);
+	border-color: rgb(255,0,0);
+}
+
 #login {
 	display: none;
 	text-align: center;
@@ -125,6 +131,7 @@ input:focus {
 .clickable {
 	cursor: pointer;
 }
+
 </style>
 	</head>
 	<body onClick="hideMessage();">
@@ -139,7 +146,7 @@ input:focus {
 			<h2>Create New Group</h2>
 			<form id="frmCreateGroup">
 				<p>
-				<input type="text" id="txtCreateGroupName" placeholder="Group Name" size=20 autocomplete="username">
+				<input type="text" class="tool" id="txtCreateGroupName" placeholder="Group Name" size=20 autocomplete="username" data-tip="Only characters consisting of [a-zA-Z0-9_] are allowed.">
 				<input type="password" id="txtCreateGroupPassword" placeholder="Group Password" autocomplete="new-password" size=20>
 				</p>
 				<p>
@@ -149,6 +156,7 @@ input:focus {
 				<button type="button" id="btnCreateGroupCancel" onClick="location.reload();">Cancel</button>
 				<button type="button" id="btnCreateGroupSave" onClick="register_group();" disabled>Create</button>
 				</p>
+				<p>Group name may only consist of characters in the range [a-zA-Z0-9_]</p>
 				<p>
 				Password recovery email will only be used if you need to reset
 				the password for the group. It will be purged within 1 week after the larp is over.
@@ -206,7 +214,7 @@ input:focus {
 				</p>
 				<p>
 				<button type="button" id="btnGroupCreate" onClick="show_createGroup();">Create Group</button>
-				<button type="button" id="btnReoverPassword" onClick="show_passwordRecovery();">Recover Password</button>
+				<button type="button" id="btnRecoverPassword" onClick="show_passwordRecovery();">Recover Password</button>
 				<button type="button" id="btnGroupLogin" disabled>Log in</button>
 				</p>
 				<datalist id="lstGroups" />
@@ -218,6 +226,7 @@ input:focus {
 			<button id="btnKeySubmit">Submit Key</button>
 			<p id="groupIncorrect">Remaining Guesses: <span id="lblWrongCounter">0</span></p>
 			<p id="nextGuess">New guess will be available at: <span id="lblWrongCountdown">00:00</span></p>
+			<p><a href="challenges.html" target="skvaderlocks">Challenges</a></p>
 			<p>Your Groups Score: <span id="lblGroupScore"></span></p>
 			<p>You are allowed three incorrect guesses per 10 minutes.
 			 	after that you must wait until at least 10 minutes
