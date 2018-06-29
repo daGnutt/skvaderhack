@@ -29,9 +29,7 @@ function parseHints()
 			hintdom.appendChild( document.createTextNode( hint.description ) );
 		}
 		document.getElementById("hintlist").appendChild(hintdom);
-		console.log(hint);
 	}
-	console.log(hints);
 }
 
 function killAllChildren(dom)
