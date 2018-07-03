@@ -12,19 +12,19 @@ import auth
 import groups
 import sendemail
 
+from httperror import HTTPError
+
 RETURN_HEADERS = []
 
 def __do_get():
-    RETURN_HEADERS.append('Status: 403')
-    return "This script is NOT get-able"
+    raise HTTPError("This script is NOT GET-able", 403)
 
 def __do_post():
     postdata = sys.stdin.read()
     try:
         postdata = json.loads(postdata)
     except json.JSONDecodeError:
-        RETURN_HEADERS.append('Status: 400')
-        return "Malformed Request. Data not JSON-decodable"
+        raise HTTPError("Malformed Request. Data not JSON-decodable")
 
     if 'action' in postdata and postdata['action'] == "request_token":
         return __get_token(postdata)
@@ -32,26 +32,28 @@ def __do_post():
     if 'action' in postdata and postdata['action'] == 'reset_password':
         return __reset_password(postdata)
 
-    RETURN_HEADERS.append('Status: 500')
-    return "Not implemented"
+    raise HTTPError("Not Implemented", 500)
 
 def __get_token(request):
     if not 'email' in request:
-        RETURN_HEADERS.append('Status: 400')
-        return "Missing Email"
+        raise HTTPError("Missing email")
 
     try:
         token = get_token(request['email'])
+        if token == None:
+            raise HTTPError("No such recipient")
         send_token(request['email'], token)
-        RETURN_HEADERS.append('Status: 200')
         return ""
     except ValueError as err:
-        RETURN_HEADERS.append('Status: 400')
-        return json.dumps(err.args[0])
+        raise HTTPError(err.args[0])
 
 def get_token(email):
     """Recieves a new password recovery token for the email address"""
     database = sqlite3.connect('database.sqlite3')
+
+    exists = database.execute("SELECT count() FROM groups WHERE contact_email=?", (email,)).fetchone()[0]
+    if exists == 0:
+        return None
 
     while True:
         token = auth.generate_random()
@@ -71,19 +73,17 @@ def send_token(email, token):
         string = file_pointer.read()
 
     string = string % (token, email, token)
-    sendemail.send_email(email, "Password Recovery", string, "baron@skvaderhack.xyz")
+    sendemail.send_email(email, "Skvaderhack Password Recovery", string, "baron@skvaderhack.xyz")
 
 def __reset_password(request):
     try:
         reset_password(request['email'], request['token'], request['password'])
         group = groups.find_group_by_email(request['email'])
         token = auth.login(group, request['password'])
-        RETURN_HEADERS.append('Status: 200')
-        return token
+        return json.dumps(token)
 
     except ValueError as err:
-        RETURN_HEADERS.append('Status: 400')
-        return err.args[0]
+        raise HTTPError(err.args[0])
 
 def reset_password(email, token, password):
     """Uses a token/email combination to set a password"""
@@ -115,8 +115,7 @@ def reset_password(email, token, password):
 
 def __main():
     if not 'REQUEST_METHOD' in os.environ:
-        RETURN_HEADERS.append('Status: 400')
-        return "MISSING REQUEST_METHOD"
+        raise HTTPError("Missing REQUEST_METHOD")
 
     if os.environ['REQUEST_METHOD'] == 'GET':
         return __do_get()
@@ -124,12 +123,25 @@ def __main():
     if os.environ['REQUEST_METHOD'] == 'POST':
         return __do_post()
 
-    RETURN_HEADERS.append('Status: 400')
-    return "Not implemented"
+    raise HTTPError("Undhandled REQUEST_METHOD")
+
 
 if __name__ == '__main__':
-    RESPONSE = __main()
-    for header in RETURN_HEADERS:
-        print(header)
+    try:
+        RESPONSE = __main()
+    except HTTPError as err:
+        if err.status:
+            RETURN_HEADERS.append('Status: %d' % err.status)
+        else:
+            RETURN_HEADERS.append('Status: 400')
+        RESPONSE = err.message
+
+    NUM_HEADERS = len(RETURN_HEADERS)
+    if NUM_HEADERS == 0:
+        print('Status: 200')
+    else:
+        for header in RETURN_HEADERS:
+            print(header)
+    print('Content-Length: %d' % len(RESPONSE))
     print()
     print(RESPONSE)
