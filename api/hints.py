@@ -14,10 +14,15 @@ RETURN_HEADERS = []
 
 def fetch_valid_hints():
     database = sqlite3.connect('database.sqlite3')
-    hints = database.execute(('SELECT publish, description, url FROM hints'
-                              ' WHERE publish IS NULL'
-                              ' OR publish < CURRENT_TIMESTAMP'
-                              ' ORDER BY publish ASC, description ASC'))
+    # hints = database.execute(('SELECT publish, description, url FROM hints'
+    #                           ' WHERE publish IS NULL'
+    #                           ' OR publish < CURRENT_TIMESTAMP'
+    #                           ' ORDER BY publish ASC, description ASC'))
+                            
+    hints = database.execute(("SELECT hint_publish, hint_description, hint_url"
+                              " FROM keys WHERE (hint_description IS NOT NULL)"
+                              " AND (hint_publish IS NULL OR hint_publish < CURRENT_TIMESTAMP)"
+                              " ORDER BY hint_publish ASC, hint_description ASC"))
     allhints = hints.fetchall()
     rvalues = []
     for row in allhints:
