@@ -1,244 +1,243 @@
 <!doctype html>
 <html>
-	<head>
-		<title>Skvaderhack</title>
-		<link href="https://fonts.googleapis.com/css?family=Audiowide|Share+Tech+Mono" rel="stylesheet">
-		<link href="/favicon.ico" rel="icon" type="image/x-icon" />
-		<meta name="viewport" content="width=400, initial-scale=1.0">
-		<meta name="theme-color" content="#5a005a">
-<style>
-body {
-	background-color: rgb(56,0,56);
-	color: rgb(255,0,255);
 
-	font-family: 'Share Tech Mono', monospace;
-	position: relative;
-}
+<head>
+	<title>Skvaderhack</title>
+	<link href="https://fonts.googleapis.com/css?family=Audiowide|Share+Tech+Mono" rel="stylesheet">
+	<link href="/favicon.ico" rel="icon" type="image/x-icon" />
+	<meta name="viewport" content="width=400, initial-scale=1.0">
+	<meta name="theme-color" content="#5a005a">
+	<style>
+		body {
+			background-color: rgb(56, 0, 56);
+			color: rgb(255, 0, 255);
+			font-family: 'Share Tech Mono', monospace;
+			position: relative;
+		}
 
-div#message {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+		div#message {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			border-style: solid;
+			border-width: 3px;
+			border-color: rgb(255, 0, 255);
+			border-radius: 5px;
+			padding: 10px;
+			display: none;
+		}
 
-	background-color: yellow;
-	border-style: solid;
-	border-width: 3px;
-	border-color: rgb(255,0,255);
-	border-radius: 5px;
-	padding: 10px;
+		header {
+			text-align: center;
+		}
 
-	display: none;
-}
+		div.container {
+			width: 400px;
+			margin-left: auto;
+			margin-right: auto;
+		}
 
-header {
-	text-align: center;
-}
+		div#scoreboard {
+			width: auto;
+			display: flex;
+			flex-flow: row wrap;
+		}
 
-div.container {
-	width: 400px;
-	margin-left: auto;
-	margin-right: auto;
-}
+		div.score-item {
+			margin: auto;
+			width: 150px;
+			height: 50px;
+		}
 
-div#scoreboard {
-	width: auto;
-	display: flex;
-	flex-flow: row wrap;
-}
+		h1 {
+			font-family: 'Audiowide', cursive;
+		}
 
-div.score-item {
-	margin: auto;
-	width: 150px;
-	height: 50px;
-}
+		h2 {
+			font-family: 'Audiowide', cursive;
+			text-align: center;
+		}
 
-h1 {
-	font-family: 'Audiowide', cursive;
-}
+		a[target='_blank'] {
+			color: rgb(255,255,255);
+			font-weight: bold;
+		}
 
-h2 {
-	font-family: 'Audiowide', cursive;
-	text-align: center;
-}
+		a[target='_blank']::after {
+			content: ' (opens in a new window)';
+			color: rgb(128,128,128);
+		}
 
-button {
-	display: inline-block;
-	border: none;
-	padding: 5px;
-	font-weight: bold;
-	color: rgb(56,0,56);
-	background-color: rgb(128,0,128);
-	border-radius: 4px;
-	font-family: 'Share Tech Mono', monospace;
-}
+		button {
+			display: inline-block;
+			border: none;
+			padding: 5px;
+			font-weight: bold;
+			color: rgb(56, 0, 56);
+			background-color: rgb(128, 0, 128);
+			border-radius: 4px;
+			font-family: 'Share Tech Mono', monospace;
+		}
 
-button:hover:not([disabled]) {
-	background-color: rgb(255,0,255);
-		box-shadow: 0 0 10px rgb(255,0,255);
-}
+		button:hover:not([disabled]) {
+			background-color: rgb(255, 0, 255);
+			box-shadow: 0 0 10px rgb(255, 0, 255);
+		}
 
-button:disabled {
-	background-color: rgb(64,64,64);
-}
+		button:disabled {
+			background-color: rgb(64, 64, 64);
+		}
 
-input:disabled {
-	background-color: rgb(64,64,64);
-	border-width: 0px;
-}
+		input:disabled {
+			background-color: rgb(64, 64, 64);
+			border-width: 0px;
+		}
 
-input {
-	font-family: 'Share Tech Mono', monospace;
-	background-color: rgb(56,0,56);
-	border-style: solid;
-	border-color: rgb(255,0,255);
-	border-radius: 4px;
-	padding: 5px;
-	color: rgb(255,255,255);
-}
+		input {
+			font-family: 'Share Tech Mono', monospace;
+			background-color: rgb(56, 0, 56);
+			border-style: solid;
+			border-color: rgb(255, 0, 255);
+			border-radius: 4px;
+			padding: 5px;
+			color: rgb(255, 255, 255);
+		}
 
-input:focus {
-	outline: none;
-	border-color: rgb(255,128,255);
-	box-shadow: 0 0 10px rgb(255,0,255);
-}
+		input:focus {
+			outline: none;
+			border-color: rgb(255, 128, 255);
+			box-shadow: 0 0 10px rgb(255, 0, 255);
+		}
 
-input.error {
-	outline: none;
-	box-shadow: 0 0 10px rgb(255, 0, 0);
-	border-color: rgb(255,0,0);
-}
+		input.error {
+			outline: none;
+			box-shadow: 0 0 10px rgb(255, 0, 0);
+			border-color: rgb(255, 0, 0);
+		}
 
-#login {
-	display: none;
-	text-align: center;
-}
+		#login {
+			display: none;
+			text-align: center;
+		}
 
-#keysubmit {
-	display: none;
-}
+		#keysubmit {
+			display: none;
+		}
 
-#creategroup {
-	display: none;
-	text-align: center;
-}
+		#creategroup {
+			display: none;
+			text-align: center;
+		}
 
-#passwordrecovery {
-	text-align: center;
-	display: none;
-}
+		#passwordrecovery {
+			text-align: center;
+			display: none;
+		}
 
-.clickable {
-	cursor: pointer;
-}
+		.clickable {
+			cursor: pointer;
+		}
 
-</style>
-	</head>
-	<body onClick="hideMessage();">
-		<header>
-			<h1><img src="img/skvaderhack.png" alt="Skvaderhack" /></h1>
-		</header>
-		<main>
+	</style>
+</head>
+
+<body>
+	<header>
+		<h1><img src="img/skvaderhack.png" alt="Skvaderhack" /></h1>
+	</header>
+	<main>
 		<div id="message">
 		</div>
 		<div class="container">
-		<div id="creategroup">
-			<h2>Create New Group</h2>
-			<form id="frmCreateGroup">
-				<p>
-				<input type="text" class="tool" id="txtCreateGroupName" placeholder="Group Name" size=20 autocomplete="username" data-tip="Only characters consisting of [a-zA-Z0-9_] are allowed.">
-				<input type="password" id="txtCreateGroupPassword" placeholder="Group Password" autocomplete="new-password" size=20>
-				</p>
-				<p>
-				<input type="email" id="txtCreateGroupEmail" placeholder="Password Recovery Email" size=30 autocomplete="email">
-				</p>
-				<p>
-				<button type="button" id="btnCreateGroupCancel" onClick="location.reload();">Cancel</button>
-				<button type="button" id="btnCreateGroupSave" onClick="register_group();" disabled>Create</button>
-				</p>
-				<p>Group name may only consist of characters in the range [a-zA-Z0-9_]</p>
-				<p>
-				Password recovery email will only be used if you need to reset
-				the password for the group. It will be purged within 1 week after the larp is over.
-				</p>
-			</form>
-		</div>
-		<div id="passwordrecovery">
-			<h2>Password Recovery</h2>
-			<div id="pwdrecreq">
-			<h3>Request Recovery Token</h3>
-			<form id="frmPwdRecReq">
-				<p>
-				<input type="email" id="txtReqPwdRec" placeholder="Contact Email" size=30 autocomplete="email">
-				</p>
-				<p>
-				<button type="button" onClick="location.reload();">Cancel</button>
-				<button type="button" onClick="req_passwordRecovery();" id="btnReqPwdReq">Request Recovery</button>
-				</p>
-				<p>
-				When you click Request Recovery Token an email will be sent to the contact email.
-				This email will contain a link, and a token. Either fill out the form that appears here
-				or click the link to be able to set a new password.
-				</p>
-			</form>
-			</div>
-			<div id="pwdrecred">
-				<h3>Redeem Recovery Token</h3>
-				<form id="frmPwdRecRed">
-				<p>
-				<input type="email" id="txtRedPwdRecEmail" placeholder="Contact Email" size=30 autocomplete="email">
-				</p>
-				<p>
-				<input type="text" id="txtRedPwdRecToken" placeholder="Token" autocomplete="off">
-				</p>
-				<p>
-				<input type="password" id="txtRedPwdRecPwd" placeholder="New Password" autocomplete="new-password">
-				</p>
-				<p>
-				<button onClick="localStorage.removeItem('recovery'); location.reload();" type="button">Abort Password Recovery</button>
-				<button type="button" onClick="req_setPassword();" id="btnSetNewPassword">Save Password</button>
-				</p>
-				<p>
-				An email shall have been sent to you. If you click the link, you will get
-				back to this page with the fields all filled out, otherwise you must
-				copy the token from your email and insert it in this form.
-				</p>
+			<div id="creategroup">
+				<h2>Create New Group</h2>
+				<form id="frmCreateGroup">
+					<p>
+						<input type="text" class="tool" id="txtCreateGroupName" placeholder="Group Name" size=20 autocomplete="username" data-tip="Only characters consisting of [a-zA-Z0-9_] are allowed.">
+						<input type="password" id="txtCreateGroupPassword" placeholder="Group Password" autocomplete="new-password" size=20>
+					</p>
+					<p>
+						<input type="email" id="txtCreateGroupEmail" placeholder="Password Recovery Email" size=30 autocomplete="email">
+					</p>
+					<p>
+						<button type="button" id="btnCreateGroupCancel">Cancel</button>
+						<button type="button" id="btnCreateGroupSave" disabled>Create</button>
+					</p>
+					<p>Group name may only consist of characters in the range [a-zA-Z0-9_]</p>
+					<p>
+						Password recovery email will only be used if you need to reset the password for the group. It will be purged within 1 week after the larp is over.
+					</p>
 				</form>
 			</div>
-		</div>
-		<div id="login">
-			<form id="frmLogin">
-				<p>
-				<input type="text" id="txtGroupName" list="lstGroups" autocomplete="username" placeholder="Group" size=20>
-				<input type="password" id="txtGroupPwd" autocomplete="current-password" placeholder="Password" size=20>
-				</p>
-				<p>
-				<button type="button" id="btnGroupCreate" onClick="show_createGroup();">Create Group</button>
-				<button type="button" id="btnRecoverPassword" onClick="show_passwordRecovery();">Recover Password</button>
-				<button type="button" id="btnGroupLogin" disabled>Log in</button>
-				</p>
-				<datalist id="lstGroups" />
-			</form>
-		</div>
-		<div id="keysubmit">
-			<p><button id="btnLogout">Log Out</button></p>
-			<input type="text" id="txtKeySubmit">
-			<button id="btnKeySubmit">Submit Key</button>
-			<p id="groupIncorrect">Remaining Guesses: <span id="lblWrongCounter">0</span></p>
-			<p id="nextGuess">New guess will be available at: <span id="lblWrongCountdown">00:00</span></p>
-			<p><a href="challenges.html" target="skvaderlocks">Challenges</a></p>
-			<p>Your Groups Score: <span id="lblGroupScore"></span></p>
-			<p>You are allowed three incorrect guesses per 10 minutes.
-			 	after that you must wait until at least 10 minutes
-				has passed since the first incorrect guess.</p>
-		</div>
+			<div id="passwordrecovery">
+				<h2>Request Recovery Token</h2>
+				<form id="frmPwdRecReq">
+					<p>
+						<input type="email" id="txtReqPwdRec" placeholder="Contact Email" size=30 autocomplete="email">
+					</p>
+					<p>
+						<button type="button" id="btnReqPwdCancel">Cancel</button>
+						<button type="button" id="btnReqPwdReq">Request Recovery</button>
+					</p>
+					<p>
+						When you click Request Recovery Token an email will be sent to the contact email. This email will contain a link, and a token. Either fill out the form that appears here or click the link to be able to set a new password.
+					</p>
+				</form>
+			</div>
+			<div id="passwordreset">
+				<h2>Redeem Recovery Token</h2>
+				<form id="frmPwdRecRed">
+					<p>
+						<input type="email" id="txtRedPwdRecEmail" placeholder="Contact Email" size=30 autocomplete="email">
+					</p>
+					<p>
+						<input type="text" id="txtRedPwdRecToken" placeholder="Token" autocomplete="off">
+					</p>
+					<p>
+						<input type="password" id="txtRedPwdRecPwd" placeholder="New Password" autocomplete="new-password">
+					</p>
+					<p>
+						<button type="button" id="btnAbortNewPassword">Abort Password Recovery</button>
+						<button type="button" id="btnSetNewPassword">Save Password</button>
+					</p>
+					<p>
+						An email shall have been sent to you. If you click the link, you will get back to this page with the fields all filled out, otherwise you must copy the token from your email and insert it in this form.
+					</p>
+				</form>
+			</div>
+			<div id="login">
+				<form id="frmLogin">
+					<p>
+						<input type="text" id="txtGroupName" list="lstGroups" autocomplete="username" placeholder="Group" size=20>
+						<input type="password" id="txtGroupPwd" autocomplete="current-password" placeholder="Password" size=20>
+					</p>
+					<p>
+						<button type="button" id="btnGroupCreate">Create Group</button>
+						<button type="button" id="btnRecoverPassword">Recover Password</button>
+						<button type="button" id="btnGroupLogin" disabled>Log in</button>
+					</p>
+					<datalist id="lstGroups" />
+				</form>
+			</div>
+			<div id="keysubmit">
+				<p><button id="btnLogout">Log Out</button></p>
+				<input type="text" id="txtKeySubmit">
+				<button id="btnKeySubmit" disabled>Submit Key</button>
+				<p id="groupIncorrect">Remaining Guesses: <span id="lblWrongCounter">0</span></p>
+				<p id="nextGuess">New guess will be available at: <span id="lblWrongCountdown">00:00</span></p>
+				<p><a href="challenges.html" target="_blank">Challenges</a></p>
+				<p>Your Groups Score: <span id="lblGroupScore"></span></p>
+				<p>You are allowed three incorrect guesses per 10 minutes. after that you must wait until at least 10 minutes has passed since the first incorrect guess.</p>
+			</div>
 		</div>
 		<div id="scores">
 			<h2>Scoreboard</h2>
 			<div id="scoreboard">
 			</div>
 		</div>
-		</main>
-		<script src="app.js"></script>
-	</body>
+	</main>
+	<script src="app.js"></script>
+</body>
+
 </html>
