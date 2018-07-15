@@ -58,20 +58,28 @@ def login(groupname, password):
 
     password_hash = hash_password(password, result[0])
     if password_hash == result[1]:
-        while True: # Create unique authtoken
-            token = generate_random()
-            authtokencount = database.execute(
-                'SELECT count() FROM authtoken WHERE authtoken=?',
-                (token,)).fetchone()
-            if authtokencount[0] == 0:
-                break
-        database.execute(
-            'INSERT INTO authtoken(groupname, authtoken) values(?, ?)',
-            (groupname, token))
-        database.commit()
-
+        token = create_authtoken(groupname)
         return token
     raise HTTPError("Incorrect groupname/password", 403)
+
+def create_authtoken(groupname):
+    """Genreates a new authtoken for the supplied groupname."""
+
+    if not isinstance(groupname, str):
+        raise TypeError('Groupname must be a string')
+
+    database = sqlite3.connect('database.sqlite3')
+    while True:
+        token = generate_random()
+        counter = database.execute(
+            'SELECT count() FROM authtoken WHERE authtoken=?',
+            (token,)).fetchone()[0]
+        if counter == 0:
+            break
+    database.execute('INSERT INTO authtoken(groupname, authtoken) values(?, ?)', (groupname, token))
+    database.commit()
+
+    return token
 
 def generate_random():
     """Generates a random identifier. Is probably unique"""
@@ -89,7 +97,7 @@ def __verify_token(request):
     if group is None:
         raise HTTPError("Invalid Authtoken", 401)
     RETURN_HEADERS.append('Stauts: 200')
-    return group
+    return json.dumps(group)
 
 def verify_token(token):
     """Verifies that the supplied token is valid. Expires old tokens.
