@@ -70,14 +70,14 @@ def submitkey(authtoken, key):
                                  {"groupname": group, "key": key}).fetchone()[0]
 
     if submitted != 0:
-        raise HTTPError(groupstate(authtoken), 400)
+        raise HTTPError(groupstate(authtoken), 410)
 
     badkey = database.execute(('SELECT count() FROM badkeys'
                                ' WHERE groupname=:groupname AND key=:key'),
                               {"groupname": group, "key": key}).fetchone()[0]
 
     if badkey != 0:
-        raise HTTPError(groupstate(authtoken), 400)
+        raise HTTPError(groupstate(authtoken), 410)
 
     keyexist = database.execute('SELECT count() FROM keys WHERE LOWER(key)=:key',
                                 {'key': key}).fetchone()[0]
@@ -85,7 +85,7 @@ def submitkey(authtoken, key):
         database.execute('INSERT INTO badkeys(groupname, key) values(:groupname, :key)',
                          {'groupname': group, 'key': key})
         database.commit()
-        raise HTTPError(groupstate(authtoken), 406)
+        raise HTTPError(groupstate(authtoken), 400)
 
     database.execute('INSERT INTO claims(groupname, key) values(:groupname, :key)',
                      {'groupname': group, 'key': key})
