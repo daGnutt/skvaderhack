@@ -59,6 +59,11 @@
 			text-align: center;
 		}
 
+		a {
+			color: rgb(255,255,255);
+			font-weight: bold;
+		}
+
 		a[target='_blank'] {
 			color: rgb(255,255,255);
 			font-weight: bold;
@@ -132,6 +137,10 @@
 
 		#passwordrecovery {
 			text-align: center;
+			display: none;
+		}
+
+		#passwordreset {
 			display: none;
 		}
 
@@ -222,11 +231,13 @@
 			</div>
 			<div id="keysubmit">
 				<p><button id="btnLogout">Log Out</button></p>
+				<p>Solve our challenges to find your keys. Submit the keys to earn the points!</p>
+				<p><a href="challenges.html" target="_blank">Challenges</a></p>
 				<input type="text" id="txtKeySubmit">
 				<button id="btnKeySubmit" disabled>Submit Key</button>
 				<p id="groupIncorrect">Remaining Guesses: <span id="lblWrongCounter">0</span></p>
 				<p id="nextGuess">New guess will be available at: <span id="lblWrongCountdown">00:00</span></p>
-				<p><a href="challenges.html" target="_blank">Challenges</a></p>
+				<p><a href="aboutskvaderhack.html">More information about Skvaderhack</a></p>
 				<p>Your Groups Score: <span id="lblGroupScore"></span></p>
 				<p>You are allowed three incorrect guesses per 10 minutes. after that you must wait until at least 10 minutes has passed since the first incorrect guess.</p>
 			</div>
