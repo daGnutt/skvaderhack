@@ -131,6 +131,7 @@ function fetchScores()
 	makeRequest( "GET", "/api/score.py" ).then( function( request )
 	{
 		scores = JSON.parse( request.responseText );
+		showScoreBoard( scores );
 	} );
 }
 
@@ -172,7 +173,13 @@ function performLogin()
 			}, null, "/index.html?loggedin" );
 			prepareKeySubmit();
 		}
-		else if( this.status == 403 )
+		else
+		{
+			throw request;
+		}
+	} ).catch( function( request )
+	{
+		if( request.status == 403 )
 		{
 			prepareLogin();
 			showMessage( request.responseText );
@@ -193,7 +200,7 @@ function verifyAuthToken()
 		return;
 	}
 
-	makeRequest( "POST", "api/auth.py", { action: "authtoken", "token": token } ).then( ( request ) =>
+	makeRequest( "POST", "api/auth.py", { action: "authtoken", "token": token } ).then( function( request )
 	{
 		if( request.status == 200 )
 		{
@@ -246,6 +253,8 @@ function btnKeySubmit_Click()
 				{
 					case 200: //All is ok
 						showMessage( "A Correct key was supplied" );
+						document.getElementById( "txtKeySubmit" ).value = "";
+						document.getElementById( "txtKeySubmit" ).focus();
 						break;
 					case 400: //Bad key (first submit)
 						showMessage( "Bad key was submitted" );
@@ -456,15 +465,19 @@ function btnSetNewPassword_Click()
 		password: newpass
 	};
 
-	makeRequest( 'POST', 'api/password_recovery.py', payload).then(function(request) {
-		if(request.status == 200) {
+	makeRequest( 'POST', 'api/password_recovery.py', payload ).then( function( request )
+	{
+		if( request.status == 200 )
+		{
 			localStorage.setItem( "authtoken", JSON.parse( this.responseText ) );
 			history.pushState( { page: "login" }, null, "/index.html?loggedin" );
 			prepareKeySubmit();
-		} else {
-			showMessage(request.responseText);
 		}
-	});
+		else
+		{
+			showMessage( request.responseText );
+		}
+	} );
 }
 
 function showOnlyHead( elementId )
@@ -609,7 +622,7 @@ function makeRequest( method, url, payload )
 		};
 		if( typeof( payload ) == "string" )
 		{
-			xhr.send( payload )
+			xhr.send( payload );
 		}
 		else if( typeof( payload ) == "object" )
 		{
