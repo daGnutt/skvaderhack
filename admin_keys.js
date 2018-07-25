@@ -71,7 +71,8 @@ makeRequest( 'GET', 'api/adminkey.py' ).then( function( request )
         var score3dom = document.createElement("td");
         score3dom.innerHTML = hint.scores[2];
 
-
+	var score4dom = document.createElement("td");
+	score4dom.innerHTML = hint.scores[3];
 
         newRow.appendChild(title);
         newRow.appendChild(publish);
@@ -79,9 +80,8 @@ makeRequest( 'GET', 'api/adminkey.py' ).then( function( request )
         newRow.appendChild(score1dom);
         newRow.appendChild(score2dom);
         newRow.appendChild(score3dom);
+	newRow.appendChild(score4dom);
 
         tableBody.appendChild(newRow);
-		
-        console.log(hint);
 	}
 } );
