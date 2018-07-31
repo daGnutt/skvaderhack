@@ -1,0 +1,6 @@
+<FilesMatch "^admin_">
+	AuthName "Admin Login"
+	AuthType basic
+	AUthUserFile /var/www/sites/skvaderhack/.htpasswd
+	require valid-user
+</FilesMatch>
