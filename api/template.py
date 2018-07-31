@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-"""template.py: A basic tempalte for CGI-work"""
+"""template.py: A basic template for CGI-work"""
 
 import json
 import os
@@ -12,9 +12,10 @@ from httperror import HTTPError
 RETURN_HEADERS = []
 
 def __do_get():
-    raise HTTPError("This script is not GET-able", 403)
+    raise HTTPError("This script is not GET-able", 405)
 
 def __do_post():
+    raise HTTPError("This script is not POST-able", 405)
     postdata = sys.stdin.read()
     try:
         postdata = json.loads(postdata)
@@ -33,7 +34,7 @@ def __main():
     if os.environ['REQUEST_METHOD'] == 'POST':
         return __do_post()
 
-    raise HTTPError("Undhandled REQUEST_METHOD")
+    raise HTTPError("Undhandled REQUEST_METHOD", 405)
 
 if __name__ == '__main__':
     try:
