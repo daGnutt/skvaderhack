@@ -38,7 +38,7 @@ function makeRequest( method, url, payload )
 	} );
 }
 
-makeRequest( 'GET', 'api/adminkey.py' ).then( function( request )
+makeRequest( 'GET', 'api/admin_key.py' ).then( function( request )
 {
     hints = JSON.parse( request.responseText );
     var tableBody = document.querySelector("table#keys tbody");

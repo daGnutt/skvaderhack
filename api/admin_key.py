@@ -13,27 +13,24 @@ from httperror import HTTPError
 RETURN_HEADERS = []
 
 def __do_get():
-    if os.environ['REMOTE_ADDR'] == "172.16.0.254":
-        database = sqlite3.connect("database.sqlite3")
-        allinfo = database.execute((
-                "SELECT key, hint_publish, hint_url, hint_description,"
-                " first, second, third, other"
-                " FROM keys"
-                " ORDER BY hint_publish, hint_description"
-                ))
-        allhints = allinfo.fetchall()
-        rrows = []
-        for row in allhints:
-            rrows.append({
-                "key": row[0],
-                "publish": row[1],
-                "url": row[2],
-                "description": row[3],
-                "scores": [row[4], row[5], row[6], row[7]]
-            })
-        return json.dumps(rrows)
-    else:
-        raise HTTPError("Not whitelisted IP")
+    database = sqlite3.connect("database.sqlite3")
+    allinfo = database.execute((
+            "SELECT key, hint_publish, hint_url, hint_description,"
+            " first, second, third, other"
+            " FROM keys"
+            " ORDER BY hint_publish, hint_description"
+            ))
+    allhints = allinfo.fetchall()
+    rrows = []
+    for row in allhints:
+        rrows.append({
+            "key": row[0],
+            "publish": row[1],
+            "url": row[2],
+            "description": row[3],
+            "scores": [row[4], row[5], row[6], row[7]]
+        })
+    return json.dumps(rrows)
 
 def __do_post():
     postdata = sys.stdin.read()
