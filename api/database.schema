@@ -1,0 +1,6 @@
+CREATE TABLE password_recovery(email text, token text, generated integer default CURRENT_TIMESTAMP);
+CREATE TABLE groups(name text primary key, password text, contact_email text unique, salt text);
+CREATE TABLE authtoken(groupname text, authtoken text, generated integer default CURRENT_TIMESTAMP, FOREIGN KEY(groupname) REFERENCES groups(name) ON UPDATE CASCADE);
+CREATE TABLE claims(groupname text, key text, catchtime integer DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(groupname) REFERENCES groups(name) ON UPDATE CASCADE);
+CREATE TABLE badkeys(groupname text, key text, submittime integer DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(groupname) REFERENCES groups(name) ON UPDATE CASCADE);
+CREATE TABLE keys(key text PRIMARY KEY, first int, second int, third int, other int, hint_publish INT, hint_url TEXT, hint_description TEXT);
