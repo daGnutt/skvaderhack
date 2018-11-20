@@ -128,14 +128,12 @@ function prepareLogin()
 
 function fetchScores()
 {
-	makeRequest( "GET", "/api/score.py" ).then( function( request )
+	makeRequest( "GET", "api/score.py" ).then( function( request )
 	{
 		scores = JSON.parse( request.responseText );
 		showScoreBoard( scores );
 	} );
 }
-
-
 
 function validateLoginScreen( event )
 {
@@ -361,7 +359,14 @@ function updateGroupStatus( group_status )
 function showScoreBoard( scores )
 {
 	var scoreboard = document.getElementById( "scoreboard" );
-	scores.sort( function( a, b ) { return b.score - a.score; } );
+	scores.sort( function( a, b )
+		{ 
+			if( b.score == a.score )
+			{
+				return a.name.localeCompare( b.name );
+			}
+			return b.score - a.score; 
+		} );
 	killAllChildren( scoreboard );
 	for( var scoreplace in scores )
 	{
