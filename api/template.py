@@ -45,6 +45,7 @@ if __name__ == '__main__':
         else:
             RETURN_HEADERS.append('Status: 400')
         RESPONSE = err.message
+        sys.exit(1)
 
     NUM_HEADERS = len(RETURN_HEADERS)
     if NUM_HEADERS == 0:
