@@ -12,6 +12,18 @@ from httperror import HTTPError
 
 RETURN_HEADERS = []
 
+def fetch_all_hints():
+    database = sqlite3.connect('database.sqlite3')
+
+    hints = database.execute(("SELECT hint_publish, hint_description, hint_url"
+                              " FROM keys WHERE (hint_description IS NOT NULL)"
+                              " ORDER BY hint_publish ASC, hint_description ASC"))
+    allhints = hints.fetchall()
+    rvalues = []
+    for row in allhints:
+        rvalues.append({"publish": row[0], "description": row[1], "url": row[2]})
+    return rvalues
+
 def fetch_valid_hints():
     database = sqlite3.connect('database.sqlite3')
                             
