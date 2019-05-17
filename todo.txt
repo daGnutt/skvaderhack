@@ -1,1 +1,0 @@
-Add counter to next hint release for challenges
