@@ -3,7 +3,7 @@ function fetchHints()
 {
 	var fetcher = new XMLHttpRequest();
 	fetcher.addEventListener( "load", parseHints );
-	fetcher.open( "GET", "api/hints.py" );
+	fetcher.open( "GET", "api/all_hints.py" );
 	fetcher.send();
 }
 
@@ -28,27 +28,10 @@ function parseHints()
 		} else {
 			hintdom.appendChild( document.createTextNode( hint.description ) );
 		}
+		hintdom.appendChild( document.createTextNode( " - " ) );
+		hintdom.appendChild( document.createTextNode( hint.publish ) );
 		document.getElementById("hintlist").appendChild(hintdom);
 	}
-}
-
-function fetchNextDrop()
-{
-	var fetcher = new XMLHttpRequest();
-	fetcher.addEventListener( "load", parseDrop );
-	fetcher.open( "GET", "api/nextchallenge.py" );
-	fetcher.send();
-}
-fetchNextDrop();
-
-function parseDrop()
-{
-	if(this.status != 200)
-	{
-		throw this;
-	}
-	var time = JSON.parse( this.responseText );
-	document.getElementById( "nextdrop" ).innerHTML = time;
 }
 
 function killAllChildren(dom)

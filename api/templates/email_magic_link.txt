@@ -1,0 +1,8 @@
+Hi!
+You have recieved a login-token for the group %s at Skvaderhack
+
+To log in as the group click the following link
+https://www.skvaderhack.xyz/index.html?magic_token=%s
+
+* This link will only work for three days after it is generated.
+  or until someone clicks "Log out all from group"

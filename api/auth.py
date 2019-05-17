@@ -62,7 +62,7 @@ def login(groupname, password):
         return token
     raise HTTPError("Incorrect groupname/password", 403)
 
-def create_authtoken(groupname):
+def create_authtoken(groupname, generate_time=None):
     """Genreates a new authtoken for the supplied groupname."""
 
     if not isinstance(groupname, str):
@@ -76,7 +76,15 @@ def create_authtoken(groupname):
             (token,)).fetchone()[0]
         if counter == 0:
             break
-    database.execute('INSERT INTO authtoken(groupname, authtoken) values(?, ?)', (groupname, token))
+    if generate_time:
+        database.execute(("INSERT INTO authtoken, groupname, authtoken, generated)"
+                          " VALUES(:token, :group, :time)"), {
+                              "token": token,
+                              "group": groupname,
+                              "time": generate_time})
+    else:
+        database.execute('INSERT INTO authtoken(groupname, authtoken) values(?, ?)',
+                         (groupname, token))
     database.commit()
 
     return token
@@ -99,7 +107,7 @@ def __verify_token(request):
     RETURN_HEADERS.append('Stauts: 200')
     return json.dumps(group)
 
-def verify_token(token):
+def verify_token(token, extra_data=False):
     """Verifies that the supplied token is valid. Expires old tokens.
        Returns groupname assoicated with the token"""
     database = sqlite3.connect('database.sqlite3')
@@ -107,11 +115,19 @@ def verify_token(token):
         ("DELETE FROM authtoken"
          " WHERE datetime(generated, '+4 days') < CURRENT_TIMESTAMP"))
     database.commit()
-    groupname = database.execute("SELECT groupname FROM authtoken WHERE authtoken=?", (token,))
-    groupname = groupname.fetchone()
-    if groupname is None:
-        return None
-    return groupname[0]
+    if extra_data:
+        info = database.execute(("SELECT groupname, generated FROM autoken"
+                                 " WHERE authtoken=?"), (token, ))
+        info = info.fetchone()
+        if info is None:
+            return None
+        return {"name": info[0], "authtime": info[1]}
+    else:
+        groupname = database.execute("SELECT groupname FROM authtoken WHERE authtoken=?", (token,))
+        groupname = groupname.fetchone()
+        if groupname is None:
+            return None
+        return groupname[0]
 
 def __main():
     if not 'REQUEST_METHOD' in os.environ:
